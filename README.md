@@ -1,4 +1,4 @@
-This repo is forked from PJ Eby's [Quick Explorer plugin](https://github.com/pjeby/quick-explorer).
+This repo is forked from pjeby's [Quick Explorer plugin](https://github.com/pjeby/quick-explorer).
 
 It has been set `autoPreview` to `false`, preventing the contents of the folder being obscured.
 
