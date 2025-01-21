@@ -1,7 +1,7 @@
 import {MenuItem, Plugin, TFolder} from "./obsidian";
 import {app, use, command, addCommands, isLeafAttached, StyleSettings} from "@ophidian/core";
 import {Explorer, hoverSource} from "./Explorer";
-
+import { QuickExplorerSettings, DEFAULT_SETTINGS , QuickExplorerSettingTab} from "./settings";
 import "./redom-jsx";
 import "./styles.scss"
 import { navigateFile } from "./file-info";
@@ -18,6 +18,7 @@ declare module "obsidian" {
 
 export default class QE extends Plugin {
     statusbarItem: HTMLElement
+    settings: QuickExplorerSettings
 
     use = use.plugin(this);
     explorers = this.use(Explorer).watch();
@@ -28,6 +29,8 @@ export default class QE extends Plugin {
     }
 
     onload() {
+        this.loadSettings();
+
         this.app.workspace.registerHoverLinkSource(hoverSource, {
             display: 'Quick Explorer', defaultMod: true
         });
@@ -59,7 +62,9 @@ export default class QE extends Plugin {
             }
         }));
 
-        Object.defineProperty(TFolder.prototype, "basename", {get(){ return this.name; }, configurable: true})
+        Object.defineProperty(TFolder.prototype, "basename", { get() { return this.name; }, configurable: true })
+
+        this.addSettingTab(new QuickExplorerSettingTab(this.app, this));
     }
 
     [command("go-next",  "Go to next file in folder")]     () { return this.goFile( 1, true); }
@@ -79,4 +84,11 @@ export default class QE extends Plugin {
         this.app.workspace.unregisterHoverLinkSource(hoverSource);
     }
 
+    async loadSettings() {
+        this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+    }
+
+    async saveSettings() {
+        await this.saveData(this.settings);
+    }
 }
