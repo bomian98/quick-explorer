@@ -1,10 +1,10 @@
 {
-  "id": "quick-explorer",
-  "name": "Quick Explorer",
-  "author": "PJ Eby",
-  "authorUrl": "https://github.com/pjeby",
+  "id": "quick-explorer-unpreview",
+  "name": "Quick Explorer Unpreview",
+  "author": "bomian98",
+  "authorUrl": "https://github.com/bomian98",
   "version": "0.2.12",
-  "description": "Perform file explorer operations (and see your current file path) from the title bar, using the mouse or keyboard",
+  "description": "Perform file explorer operations (and see your current file path) from the title bar, using the mouse or keyboard. Fork from PJ Eby's Quick Explorer plugin, this version does not preview the file when you click on it.",
   "minAppVersion": "1.5.8",
   "isDesktopOnly": true
 }

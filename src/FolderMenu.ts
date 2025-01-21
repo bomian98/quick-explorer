@@ -8,7 +8,7 @@ import { fileIcon, folderNoteFor, previewIcons, sortedFiles } from "./file-info"
 
 declare module "obsidian" {
     interface HoverPopover {
-        position(pos?: {x: number, y: number}): void
+        position(pos?: { x: number, y: number }): void
         hide(): void
         onHover: boolean
         onTarget: boolean
@@ -26,7 +26,7 @@ declare module "obsidian" {
     }
     interface Vault {
         getConfig(option: string): any
-        getConfig(option:"showUnsupportedFiles"): boolean
+        getConfig(option: "showUnsupportedFiles"): boolean
     }
     interface Workspace {
         iterateLeaves(callback: (item: WorkspaceLeaf) => any, item: WorkspaceParent): boolean;
@@ -40,7 +40,7 @@ interface HoverEditor extends HoverPopover {
 
 
 // Global auto preview mode
-let autoPreview = true
+let autoPreview = false
 
 export class FolderMenu extends PopupMenu implements HoverParent {
 
@@ -49,27 +49,27 @@ export class FolderMenu extends PopupMenu implements HoverParent {
     constructor(public parent: MenuParent, public folder: TFolder, public selectedFile?: TAbstractFile, public crumb?: Breadcrumb) {
         super(parent);
         this.loadFiles(folder, selectedFile);
-        this.scope.register([],        "Tab",   this.togglePreviewMode.bind(this));
-        this.scope.register(["Mod"],   "Enter", this.onEnter.bind(this));
-        this.scope.register(["Alt"],   "Enter", this.onKeyboardContextMenu.bind(this));
-        this.scope.register([],        "\\",    this.onKeyboardContextMenu.bind(this));
-        this.scope.register([],  "ContextMenu", this.onKeyboardContextMenu.bind(this));
-        this.scope.register([],        "F2",    this.doRename.bind(this));
-        this.scope.register(["Shift"], "F2",    this.doMove.bind(this));
+        this.scope.register([], "Tab", this.togglePreviewMode.bind(this));
+        this.scope.register(["Mod"], "Enter", this.onEnter.bind(this));
+        this.scope.register(["Alt"], "Enter", this.onKeyboardContextMenu.bind(this));
+        this.scope.register([], "\\", this.onKeyboardContextMenu.bind(this));
+        this.scope.register([], "ContextMenu", this.onKeyboardContextMenu.bind(this));
+        this.scope.register([], "F2", this.doRename.bind(this));
+        this.scope.register(["Shift"], "F2", this.doMove.bind(this));
 
         // Scroll preview window up and down
-        this.scope.register([],       "PageUp", this.doScroll.bind(this, -1, false));
-        this.scope.register([],     "PageDown", this.doScroll.bind(this,  1, false));
-        this.scope.register(["Mod"],    "Home", this.doScroll.bind(this,  0, true));
-        this.scope.register(["Mod"],     "End", this.doScroll.bind(this,  1, true));
+        this.scope.register([], "PageUp", this.doScroll.bind(this, -1, false));
+        this.scope.register([], "PageDown", this.doScroll.bind(this, 1, false));
+        this.scope.register(["Mod"], "Home", this.doScroll.bind(this, 0, true));
+        this.scope.register(["Mod"], "End", this.doScroll.bind(this, 1, true));
 
         const { dom } = this;
         const menuItem = ".menu-item[data-file-path]";
-        dom.on("click",       menuItem, this.onItemClick, true);
-        dom.on("auxclick",    menuItem, this.onItemClick, true);
-        dom.on("contextmenu", menuItem, this.onItemMenu );
-        dom.on("mousedown",   menuItem, e => {e.stopPropagation()}, true);  // Fix drag cancelling
-        dom.on('dragstart',   menuItem, (event, target) => {
+        dom.on("click", menuItem, this.onItemClick, true);
+        dom.on("auxclick", menuItem, this.onItemClick, true);
+        dom.on("contextmenu", menuItem, this.onItemMenu);
+        dom.on("mousedown", menuItem, e => { e.stopPropagation() }, true);  // Fix drag cancelling
+        dom.on('dragstart', menuItem, (event, target) => {
             startDrag(this.app, target.dataset.filePath, event);
         });
 
@@ -81,10 +81,14 @@ export class FolderMenu extends PopupMenu implements HoverParent {
         // Make obsidian.Menu think mousedowns on our popups are happening
         // on us, so we won't close before an actual click occurs
         const menu = this;
-        around(this.dom, {contains(prev){ return function(target: Node) {
-            const ret = prev.call(this, target) || menu._popover?.hoverEl.contains(target);
-            return ret;
-        }}});
+        around(this.dom, {
+            contains(prev) {
+                return function (target: Node) {
+                    const ret = prev.call(this, target) || menu._popover?.hoverEl.contains(target);
+                    return ret;
+                }
+            }
+        });
     }
 
     onArrowLeft() {
@@ -96,11 +100,11 @@ export class FolderMenu extends PopupMenu implements HoverParent {
     onKeyboardContextMenu(e: KeyboardEvent) {
         if (e.code === "ContextMenu") {
             // Browser will fire contextmenu event on keyup unless prevented:
-            e.view.addEventListener("keyup", upHandler, {capture: true});
+            e.view.addEventListener("keyup", upHandler, { capture: true });
             function upHandler(e: KeyboardEvent) {
                 if (e.code === "ContextMenu") {
                     e.preventDefault();
-                    e.view.removeEventListener("keyup", upHandler, {capture: true});
+                    e.view.removeEventListener("keyup", upHandler, { capture: true });
                     return false;
                 }
             }
@@ -118,7 +122,7 @@ export class FolderMenu extends PopupMenu implements HoverParent {
                 '.markdown-preview-view'
         );
         if (preview) {
-            preview.style.scrollBehavior = toEnd ? "auto": "smooth";
+            preview.style.scrollBehavior = toEnd ? "auto" : "smooth";
             const oldTop = preview.scrollTop;
             const newTop = (toEnd ? 0 : preview.scrollTop) + direction * (toEnd ? preview.scrollHeight : preview.clientHeight);
             preview.scrollTop = newTop;
@@ -203,7 +207,7 @@ export class FolderMenu extends PopupMenu implements HoverParent {
                             // Switch to edit mode -- keyboard's not much good without it!
                             leaf.setViewState({
                                 type: leaf.view.getViewType(),
-                                state: { file: file.path, mode: "source"}
+                                state: { file: file.path, mode: "source" }
                             }).then(() => this.app.workspace.setActiveLeaf(leaf, false, true));
                         } else {
                             // Something like Kanban or Excalidraw, might not support focus flag,
@@ -221,7 +225,7 @@ export class FolderMenu extends PopupMenu implements HoverParent {
 
     loadFiles(folder: TFolder, selectedFile?: TAbstractFile) {
         this.items.forEach(i => i.dom.detach()); this.items = [];
-        const {folderNote, folders, files} = sortedFiles(folder);
+        const { folderNote, folders, files } = sortedFiles(folder);
         if (folderNote) {
             this.addFile(folderNote);
         }
@@ -237,7 +241,7 @@ export class FolderMenu extends PopupMenu implements HoverParent {
     }
 
     fileCount: (file: TAbstractFile) => number = (file: TAbstractFile) => (
-        file instanceof TFolder ? file.children.map(this.fileCount).reduce((a,b) => a+b, 0) : (fileIcon(file) ? 1 : 0)
+        file instanceof TFolder ? file.children.map(this.fileCount).reduce((a, b) => a + b, 0) : (fileIcon(file) ? 1 : 0)
     )
 
     addFile(file: TAbstractFile) {
@@ -246,14 +250,14 @@ export class FolderMenu extends PopupMenu implements HoverParent {
             i.setTitle(file.name);
             i.dom.dataset.filePath = file.path;
             i.dom.setAttr("draggable", "true");
-            i.dom.addClass (file instanceof TFolder ? "is-qe-folder" : "is-qe-file");
+            i.dom.addClass(file instanceof TFolder ? "is-qe-folder" : "is-qe-file");
             if (icon) i.setIcon(icon);
             if (file instanceof TFile) {
                 i.setTitle(file.basename);
-                if (file.extension !== "md") i.dom.createDiv({text: file.extension, cls: ["nav-file-tag","qe-extension"]});
+                if (file.extension !== "md") i.dom.createDiv({ text: file.extension, cls: ["nav-file-tag", "qe-extension"] });
             } else if (file !== this.folder.parent) {
                 const count = this.fileCount(file);
-                if (count) i.dom.createDiv({text: ""+count, cls: "nav-file-tag qe-file-count"});
+                if (count) i.dom.createDiv({ text: "" + count, cls: "nav-file-tag qe-file-count" });
             }
             i.onClick(e => this.onClickFile(file, i.dom, e))
         });
@@ -274,7 +278,7 @@ export class FolderMenu extends PopupMenu implements HoverParent {
                     this.hoverPopover.togglePin?.(true);
                     this._popover = null;
                 }
-            }, {capture: true})
+            }, { capture: true })
         );
         this.registerEvent(this.app.vault.on("create", (file) => {
             if (this.folder === file.parent) this.refreshFiles();
@@ -410,25 +414,27 @@ export class FolderMenu extends PopupMenu implements HoverParent {
                     container = hoverEl.offsetParent || this.dom.ownerDocument.documentElement,
                     popupHeight = hoverEl.offsetHeight,
                     left = Math.min(menu.right + 2, container.clientWidth - hoverEl.offsetWidth),
-                    top = Math.min(Math.max(0, selected.top - popupHeight/8), container.clientHeight - popupHeight)
-                ;
+                    top = Math.min(Math.max(0, selected.top - popupHeight / 8), container.clientHeight - popupHeight)
+                    ;
                 if (left < menu.left + (menu.width / 3) && menu.left > hoverEl.offsetWidth) {
                     // Popover hides too much of menu - move it to the left side
                     left = menu.left - hoverEl.offsetWidth;
                 }
-                popover.position({x: left, y: top});
+                popover.position({ x: left, y: top });
                 hoverEl.style.top = top + "px";
                 hoverEl.style.left = left + "px";
                 // Keep hover editor from closing even if mouse moves away
                 popover.togglePin?.(true);
             }
             if ("onShowCallback" in popover) {
-                around(popover as any, {onShowCallback(old) {
-                    return () => {
-                        popover.hoverEl.win.requestAnimationFrame(reposition);
-                        return old?.call(popover);
+                around(popover as any, {
+                    onShowCallback(old) {
+                        return () => {
+                            popover.hoverEl.win.requestAnimationFrame(reposition);
+                            return old?.call(popover);
+                        }
                     }
-                }})
+                })
             } else this.dom.win.requestAnimationFrame(reposition);
         }
     }
@@ -445,7 +451,7 @@ export class FolderMenu extends PopupMenu implements HoverParent {
         }
     }
 
-    onClickFile(file: TAbstractFile, target: HTMLDivElement, event?: MouseEvent|KeyboardEvent) {
+    onClickFile(file: TAbstractFile, target: HTMLDivElement, event?: MouseEvent | KeyboardEvent) {
         this.hidePopover();
         const idx = this.itemForPath(file.path);
         if (idx >= 0 && this.selected != idx) this.select(idx);
